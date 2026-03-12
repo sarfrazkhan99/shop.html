@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sarfraz Store</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Poppins,sans-serif;
+}
+
+body{
+background:#f5f7fb;
+color:#333;
+}
+
+header{
+background:#2b7cff;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+header h1{
+font-size:24px;
+}
+
+header p{
+font-size:14px;
+opacity:.9;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.filters{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.filters button{
+border:none;
+background:#e6eaf3;
+padding:8px 14px;
+border-radius:20px;
+cursor:pointer;
+}
+
+.filters button.active{
+background:#2b7cff;
+color:white;
+}
+
+.products{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:16px;
+}
+
+.product{
+background:white;
+border-radius:10px;
+padding:10px;
+box-shadow:0 3px 10px rgba(0,0,0,.08);
+display:flex;
+flex-direction:column;
+}
+
+.product img{
+width:100%;
+height:140px;
+object-fit:cover;
+border-radius:8px;
+}
+
+.product h3{
+font-size:15px;
+margin-top:8px;
+}
+
+.product p{
+font-size:12px;
+opacity:.7;
+}
+
+.price{
+font-weight:600;
+margin:6px 0;
+}
+
+.add{
+margin-top:auto;
+background:#2b7cff;
+border:none;
+color:white;
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.cart-btn{
+position:fixed;
+bottom:20px;
+right:20px;
+background:#ff6a00;
+color:white;
+border:none;
+padding:14px 16px;
+border-radius:50px;
+cursor:pointer;
+box-shadow:0 4px 15px rgba(0,0,0,.2);
+}
+
+.cart-count{
+background:white;
+color:#ff6a00;
+border-radius:50%;
+padding:2px 6px;
+font-size:12px;
+margin-left:4px;
+}
+
+.cart{
+position:fixed;
+top:0;
+right:-400px;
+width:340px;
+height:100%;
+background:white;
+box-shadow:-4px 0 20px rgba(0,0,0,.2);
+padding:20px;
+transition:.3s;
+overflow:auto;
+}
+
+.cart.active{
+right:0;
+}
+
+.cart-item{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+}
+
+.qty button{
+border:none;
+background:#eee;
+padding:4px 8px;
+}
+
+.total{
+font-weight:600;
+margin-top:10px;
+}
+
+.checkout{
+background:#2b7cff;
+color:white;
+border:none;
+padding:10px;
+width:100%;
+margin-top:10px;
+}
+
+.form{
+display:none;
+margin-top:20px;
+}
+
+.form input,
+.form textarea{
+width:100%;
+margin-bottom:10px;
+padding:8px;
+}
+
+.whatsapp{
+position:fixed;
+bottom:20px;
+left:20px;
+background:#25D366;
+color:white;
+padding:12px 16px;
+border-radius:40px;
+text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Sarfraz General Store</h1>
+<p>Fresh groceries delivered to your door</p>
+</header>
+
+<div class="container">
+
+<div class="filters">
+<button onclick="filter('all')" class="active">All</button>
+<button onclick="filter('Groceries')">Groceries</button>
+<button onclick="filter('Dairy')">Dairy</button>
+<button onclick="filter('Snacks')">Snacks</button>
+<button onclick="filter('Beverages')">Beverages</button>
+</div>
+
+<div class="products" id="products"></div>
+
+</div>
+
+<button class="cart-btn" onclick="toggleCart()">
+Cart <span class="cart-count" id="count">0</span>
+</button>
+
+<div class="cart" id="cart">
+
+<h2>Your Cart</h2>
+
+<div id="cart-items"></div>
+
+<div class="total">
+Total ₹<span id="total">0</span>
+</div>
+
+<button class="checkout" onclick="showForm()">Place Order</button>
+
+<form class="form"
+action="https://formspree.io/f/YOUR_FORM_ID"
+method="POST"
+onsubmit="prepareOrder()">
+
+<input name="name" placeholder="Customer Name" required>
+
+<input name="phone" placeholder="Phone Number" required>
+
+<textarea name="address" placeholder="Delivery Address" required></textarea>
+
+<textarea name="notes" placeholder="Special Instructions"></textarea>
+
+<input type="hidden" name="order" id="order-summary">
+
+<button class="checkout">Submit Order</button>
+
+</form>
+
+</div>
+
+<a class="whatsapp" href="https://wa.me/919999999999">
+Chat on WhatsApp
+</a>
+
+<script>
+
+const products=[
+
+{
+name:"Aashirvaad Atta 5kg",
+price:280,
+cat:"Groceries",
+img:"https://i.ibb.co/7J0K5gX/atta.jpg",
+desc:"Premium whole wheat flour"
+},
+
+{
+name:"Amul Butter 500g",
+price:280,
+cat:"Dairy",
+img:"https://i.ibb.co/9v7n6W5/butter.jpg",
+desc:"Fresh salted butter"
+},
+
+{
+name:"Milk 1L",
+price:60,
+cat:"Dairy",
+img:"https://i.ibb.co/6y7g4cP/milk.jpg",
+desc:"Farm fresh milk"
+},
+
+{
+name:"Maggi Noodles",
+price:14,
+cat:"Snacks",
+img:"https://i.ibb.co/3fN2g0h/maggi.jpg",
+desc:"Instant noodles"
+},
+
+{
+name:"Parle-G Biscuits",
+price:10,
+cat:"Snacks",
+img:"https://i.ibb.co/Fx2xj3P/parleg.jpg",
+desc:"Classic glucose biscuits"
+},
+
+{
+name:"Coca Cola 1L",
+price:45,
+cat:"Beverages",
+img:"https://i.ibb.co/7vC7tP2/coke.jpg",
+desc:"Refreshing drink"
+},
+
+{
+name:"Sprite 1L",
+price:45,
+cat:"Beverages",
+img:"https://i.ibb.co/w0f0K3H/sprite.jpg",
+desc:"Lemon drink"
+},
+
+{
+name:"Tata Salt 1kg",
+price:28,
+cat:"Groceries",
+img:"https://i.ibb.co/YZy3P1P/salt.jpg",
+desc:"Iodised salt"
+}
+
+]
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[]
+
+function renderProducts(list){
+
+let html=""
+
+list.forEach((p,i)=>{
+
+html+=`
+
+<div class="product">
+
+<img src="${p.img}" loading="lazy" alt="${p.name}">
+
+<h3>${p.name}</h3>
+
+<p>${p.desc}</p>
+
+<div class="price">₹${p.price}</div>
+
+<button class="add" onclick="add(${i})">Add to Cart</button>
+
+</div>
+
+`
+
+})
+
+document.getElementById("products").innerHTML=html
+
+}
+
+renderProducts(products)
+
+function filter(cat){
+
+if(cat==="all") renderProducts(products)
+
+else renderProducts(products.filter(p=>p.cat===cat))
+
+}
+
+function add(i){
+
+let item=products[i]
+
+let found=cart.find(p=>p.name===item.name)
+
+if(found) found.qty++
+
+else cart.push({...item,qty:1})
+
+save()
+
+}
+
+function save(){
+
+localStorage.setItem("cart",JSON.stringify(cart))
+
+updateCart()
+
+}
+
+function updateCart(){
+
+let items=document.getElementById("cart-items")
+
+items.innerHTML=""
+
+let total=0
+
+cart.forEach((p,i)=>{
+
+total+=p.price*p.qty
+
+items.innerHTML+=`
+
+<div class="cart-item">
+
+<div>
+${p.name}<br>
+₹${p.price}
+</div>
+
+<div class="qty">
+
+<button onclick="minus(${i})">-</button>
+${p.qty}
+<button onclick="plus(${i})">+</button>
+
+</div>
+
+</div>
+
+`
+
+})
+
+document.getElementById("total").innerText=total
+
+document.getElementById("count").innerText=cart.length
+
+}
+
+function plus(i){
+
+cart[i].qty++
+
+save()
+
+}
+
+function minus(i){
+
+cart[i].qty--
+
+if(cart[i].qty<=0) cart.splice(i,1)
+
+save()
+
+}
+
+updateCart()
+
+function toggleCart(){
+
+document.getElementById("cart").classList.toggle("active")
+
+}
+
+function showForm(){
+
+document.querySelector(".form").style.display="block"
+
+}
+
+function prepareOrder(){
+
+let text=""
+
+let total=0
+
+cart.forEach(p=>{
+
+text+=`${p.name} x ${p.qty} = ₹${p.price*p.qty}\n`
+
+total+=p.price*p.qty
+
+})
+
+text+="\nTotal = ₹"+total
+
+document.getElementById("order-summary").value=text
+
+localStorage.removeItem("cart")
+
+}
+
+</script>
+
+</body>
+  </html>
